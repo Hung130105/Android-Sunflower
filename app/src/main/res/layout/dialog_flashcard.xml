@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardFlashcard"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:clickable="true"
+        android:focusable="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/sunflower_yellow">
+
+            <!-- Mặt trước: Từ vựng + Phiên âm (căn giữa) -->
+            <LinearLayout
+                android:id="@+id/layoutFront"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvWord"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Word"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:textColor="#5D4037"
+                    android:gravity="center" />
+
+                <TextView
+                    android:id="@+id/tvPhonetic"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="/.../"
+                    android:textSize="14sp"
+                    android:textColor="#795548"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp" />
+
+            </LinearLayout>
+
+            <!-- Mặt sau: Nghĩa + Ví dụ (căn giữa) -->
+            <ScrollView
+                android:id="@+id/scrollBack"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:fillViewport="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center_vertical"
+                    android:layout_gravity="center"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvMeaning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Meaning"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#5D4037"
+                        android:gravity="center"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- ✅ ĐÃ XÓA tvPhonetic khỏi mặt sau -->
+
+                    <TextView
+                        android:id="@+id/tvExample"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Example"
+                        android:textSize="13sp"
+                        android:textStyle="italic"
+                        android:textColor="#795548"
+                        android:gravity="center" />
+
+                </LinearLayout>
+            </ScrollView>
+
+            <!-- Số thứ tự thẻ (góc dưới) -->
+            <TextView
+                android:id="@+id/tvCounter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="8dp"
+                android:text="1 / 10"
+                android:textSize="11sp"
+                android:textColor="@android:color/white" />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Các nút điều khiển -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="◀"
+            android:backgroundTint="@color/sunflower_brown"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="4dp"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnFlip"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="2"
+            android:text="Lật thẻ 🔥"
+            android:backgroundTint="@color/sunflower_orange"
+            android:textColor="@android:color/white"
+            android:layout_marginHorizontal="4dp"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:text="▶"
+            android:backgroundTint="@color/sunflower_brown"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="4dp"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <!-- Các nút thao tác thẻ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <Button
+            android:id="@+id/btnAddCard"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="+ Thêm"
+            android:backgroundTint="#4CAF50"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:layout_marginEnd="4dp" />
+
+        <Button
+            android:id="@+id/btnEditCard"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="✏️ Sửa"
+            android:backgroundTint="#FF9800"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:layout_marginHorizontal="4dp" />
+
+        <Button
+            android:id="@+id/btnDeleteCard"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:text="🗑️ Xóa"
+            android:backgroundTint="#F44336"
+            android:textColor="@android:color/white"
+            android:textSize="11sp"
+            android:layout_marginStart="4dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

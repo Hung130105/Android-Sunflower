@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFF8E1"
+    android:fitsSystemWindows="true">
+
+    <!-- Toolbar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/sunflower_yellow"
+        app:title="Chọn chế độ thi"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="?attr/homeAsUpIndicator" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Tên đề thi -->
+            <TextView
+                android:id="@+id/tvExamName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Test 1"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#5D4037"
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="🎯 Chọn chế độ thi"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#5D4037"
+                android:layout_marginBottom="16dp" />
+
+            <!-- RADIO GROUP (FIX CHUẨN) -->
+            <RadioGroup
+                android:id="@+id/rgMode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
+
+                <!-- Full Test -->
+                <RadioButton
+                    android:id="@+id/rbFullTest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="📋 Full Test\nLàm toàn bộ đề, thời gian mặc định"
+                    android:padding="16dp"
+                    android:textSize="16sp"
+                    android:background="@android:drawable/dialog_holo_light_frame"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Practice -->
+                <RadioButton
+                    android:id="@+id/rbPracticePart"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="🎯 Luyện Part\nChọn part và tự đặt thời gian"
+                    android:padding="16dp"
+                    android:textSize="16sp"
+                    android:background="@android:drawable/dialog_holo_light_frame" />
+
+            </RadioGroup>
+
+            <!-- Part Selector -->
+            <LinearLayout
+                android:id="@+id/llPartSelector"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn Part:"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="#5D4037"
+                    android:layout_marginBottom="12dp" />
+
+                <LinearLayout
+                    android:id="@+id/llPartCheckboxes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Custom time -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⏱ Thời gian: "
+                        android:textSize="14sp"
+                        android:textColor="#795548" />
+
+                    <EditText
+                        android:id="@+id/etCustomTime"
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:hint="30"
+                        android:inputType="number"
+                        android:background="@android:drawable/editbox_background"
+                        android:gravity="center"
+                        android:padding="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" phút"
+                        android:textSize="14sp"
+                        android:textColor="#795548" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="24dp">
+
+                <Button
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="Huỷ"
+                    android:backgroundTint="#9E9E9E"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnStart"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:text="🚀 Bắt đầu thi"
+                    android:backgroundTint="@color/sunflower_orange"
+                    android:textColor="@android:color/white"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
