@@ -78,7 +78,7 @@
 
     </LinearLayout>
 
-    <!-- Nội dung câu hỏi -->
+    <!-- Nội dung chính - CHỈ CÓ MỘT ScrollView -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
@@ -86,6 +86,7 @@
         android:layout_weight="1"
         android:padding="16dp">
 
+        <!-- ✅ CHỈ CÓ MỘT LinearLayout DUY NHẤT -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -109,19 +110,40 @@
                 android:textSize="16sp"
                 android:textColor="#333333"
                 android:lineSpacingExtra="4dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="16dp" />
 
+            <!-- Container cho ảnh -->
+            <LinearLayout
+                android:id="@+id/llImageContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/ivQuestionImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitCenter" />
+
+            </LinearLayout>
+
+            <!-- Đáp án -->
             <LinearLayout
                 android:id="@+id/llAnswers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
+            <!-- Nút điều hướng -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="24dp">
+                android:layout_marginTop="16dp">
 
                 <Button
                     android:id="@+id/btnPrev"
@@ -149,7 +171,7 @@
 
     </ScrollView>
 
-    <!-- Thanh palette -->
+    <!-- Thanh palette (bên dưới ScrollView) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

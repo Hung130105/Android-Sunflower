@@ -7,6 +7,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -18,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.sunflower.R;
 import com.example.sunflower.adapters.PaletteAdapter;
 import com.example.sunflower.api.ApiService;
@@ -46,6 +48,8 @@ public class TakeExamActivity extends AppCompatActivity {
     private RecyclerView rvPalette;
     private Button btnPrev, btnNext, btnSubmit;
     private ScrollView scrollView;
+    private ImageView ivQuestionImage;  // ✅ Thêm ImageView cho ảnh
+    private LinearLayout llImageContainer;  // ✅ Container cho ảnh
 
     private int examId;
     private String examName;
@@ -59,7 +63,6 @@ public class TakeExamActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private Handler audioHandler = new Handler();
 
-    // Auto next after audio
     private Runnable autoNextRunnable;
     private Handler autoNextHandler = new Handler();
     private boolean isWaitingForAutoNext = false;
@@ -107,6 +110,8 @@ public class TakeExamActivity extends AppCompatActivity {
         btnNext = findViewById(R.id.btnNext);
         btnSubmit = findViewById(R.id.btnSubmit);
         scrollView = findViewById(R.id.scrollView);
+        ivQuestionImage = findViewById(R.id.ivQuestionImage);
+        llImageContainer = findViewById(R.id.llImageContainer);
 
         btnPrev.setOnClickListener(v -> goPrev());
         btnNext.setOnClickListener(v -> goNext());
@@ -160,28 +165,6 @@ public class TakeExamActivity extends AppCompatActivity {
             paletteAdapter.setSelectedAnswers(selectedAnswers);
             paletteAdapter.setCurrentPosition(currentIndex);
         }
-
-        // Cập nhật trạng thái nút Prev
-        updateButtonsState();
-    }
-
-    private void updateButtonsState() {
-        if (questions == null || questions.isEmpty()) return;
-
-        CauHoi currentQ = questions.get(currentIndex);
-        boolean isListening = currentQ.getTenPart() <= 4;
-
-        if (isListening) {
-            // ✅ TRONG LISTENING: KHÔNG ĐƯỢC QUAY LẠI CÂU TRƯỚC
-            btnPrev.setEnabled(false);
-            btnPrev.setAlpha(0.5f);
-        } else {
-            // ✅ TRONG READING: CÓ THỂ QUAY LẠI
-            btnPrev.setEnabled(currentIndex > 0);
-            btnPrev.setAlpha(1.0f);
-        }
-
-        btnNext.setEnabled(currentIndex < questions.size() - 1);
     }
 
     private void displayQuestion() {
@@ -191,11 +174,12 @@ public class TakeExamActivity extends AppCompatActivity {
         CauHoi q = questions.get(currentIndex);
         if (q == null) return;
 
-        // Hủy auto next đang chờ
         cancelAutoNext();
 
-        // Dừng và giải phóng audio cũ
-        stopAndReleaseMediaPlayer();
+        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+            mediaPlayer.stop();
+            mediaPlayer.reset();
+        }
 
         int answered = selectedAnswers.size();
         tvQuestionCount.setText(answered + "/" + questions.size());
@@ -204,9 +188,12 @@ public class TakeExamActivity extends AppCompatActivity {
 
         String content = q.getNoiDung();
         if (content == null || content.isEmpty()) {
-            content = "📢 Nghe audio bên dưới";
+            content = "📢 Nghe audio hoặc đọc văn bản bên dưới";
         }
         tvQuestionContent.setText(content);
+
+        // ✅ HIỂN THỊ ẢNH (CHO CẢ LISTENING VÀ READING)
+        displayImage(q);
 
         // Hiển thị đáp án
         llAnswers.removeAllViews();
@@ -253,8 +240,8 @@ public class TakeExamActivity extends AppCompatActivity {
             llAnswers.addView(tvNoAnswer);
         }
 
-        // Cập nhật trạng thái nút
-        updateButtonsState();
+        btnPrev.setEnabled(currentIndex > 0);
+        btnNext.setEnabled(currentIndex < questions.size() - 1);
 
         scrollView.fullScroll(ScrollView.FOCUS_UP);
 
@@ -264,15 +251,40 @@ public class TakeExamActivity extends AppCompatActivity {
         }
     }
 
+    // ✅ HÀM HIỂN THỊ ẢNH
+    private void displayImage(CauHoi q) {
+        String imageUrl = null;
+
+        // Lấy ảnh từ câu hỏi
+        if (q.getImgURL() != null && !q.getImgURL().isEmpty()) {
+            imageUrl = q.getImgURL();
+        }
+        // Lấy ảnh từ nhóm (cho Part 3,4,6,7)
+        else if (q.getNhom() != null && q.getNhom().getImages() != null
+                && !q.getNhom().getImages().isEmpty()) {
+            imageUrl = q.getNhom().getImages().get(0).getImgURL();
+        }
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            llImageContainer.setVisibility(View.VISIBLE);
+            Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_image_placeholder)
+                    .error(R.drawable.ic_image_error)
+                    .into(ivQuestionImage);
+        } else {
+            llImageContainer.setVisibility(View.GONE);
+            ivQuestionImage.setImageDrawable(null);
+        }
+    }
+
     private void playAudioIfAvailable(CauHoi q) {
         final String audioUrl;
 
-        // Lấy audio từ nhóm (Part 3,4 có nhóm audio)
         if (q.getNhom() != null && q.getNhom().getAudioURL() != null
                 && !q.getNhom().getAudioURL().isEmpty()) {
             audioUrl = q.getNhom().getAudioURL();
         }
-        // Lấy audio từ câu hỏi (Part 1,2 có audio riêng)
         else if (q.getAudioURL() != null && !q.getAudioURL().isEmpty()) {
             audioUrl = q.getAudioURL();
         } else {
@@ -280,7 +292,6 @@ public class TakeExamActivity extends AppCompatActivity {
         }
 
         if (audioUrl != null && !audioUrl.isEmpty()) {
-            // Delay nhỏ để tránh xung đột
             audioHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -292,10 +303,14 @@ public class TakeExamActivity extends AppCompatActivity {
 
     private void playAudio(String url) {
         try {
-            // Đảm bảo MediaPlayer đã được giải phóng trước khi tạo mới
-            stopAndReleaseMediaPlayer();
+            if (mediaPlayer != null) {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
+                mediaPlayer.release();
+                mediaPlayer = null;
+            }
 
-            // Tạo MediaPlayer mới
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(url);
             mediaPlayer.prepareAsync();
@@ -306,11 +321,12 @@ public class TakeExamActivity extends AppCompatActivity {
                 }
             });
 
-            // KHI AUDIO KẾT THÚC, TỰ ĐỘNG CHUYỂN CÂU SAU 3 GIÂY
             mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    scheduleAutoNext();
+                    if (currentIndex < questions.size() && questions.get(currentIndex).getTenPart() <= 4) {
+                        scheduleAutoNext();
+                    }
                 }
             });
 
@@ -330,19 +346,19 @@ public class TakeExamActivity extends AppCompatActivity {
         }
     }
 
-    // Lên lịch tự động chuyển câu sau 3 giây
     private void scheduleAutoNext() {
         cancelAutoNext();
         isWaitingForAutoNext = true;
 
-        // Hiển thị thông báo sẽ tự động chuyển
         Toast.makeText(this, "🎧 Audio kết thúc, tự động chuyển câu sau 3 giây...", Toast.LENGTH_SHORT).show();
 
         autoNextRunnable = new Runnable() {
             @Override
             public void run() {
                 isWaitingForAutoNext = false;
-                autoGoToNextQuestion();
+                if (currentIndex < questions.size() - 1) {
+                    goNext();
+                }
             }
         };
         autoNextHandler.postDelayed(autoNextRunnable, 3000);
@@ -356,49 +372,8 @@ public class TakeExamActivity extends AppCompatActivity {
         isWaitingForAutoNext = false;
     }
 
-    private void autoGoToNextQuestion() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (currentIndex < questions.size() - 1) {
-                    goNext();
-                } else {
-                    Toast.makeText(TakeExamActivity.this, "Đã hết câu hỏi!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-    }
-
-    private void stopAndReleaseMediaPlayer() {
-        if (mediaPlayer != null) {
-            try {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
-                mediaPlayer.release();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            mediaPlayer = null;
-        }
-    }
-
     private void goPrev() {
-        // Hủy auto next
         cancelAutoNext();
-
-        // ✅ CHỈ CHẶN QUAY LẠI TRONG PHẦN LISTENING
-        if (questions != null && currentIndex < questions.size()) {
-            CauHoi currentQ = questions.get(currentIndex);
-            if (currentQ.getTenPart() <= 4) {
-                Toast.makeText(this, "⚠️ Không thể quay lại câu trước trong phần Listening!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
-
-        // Dừng audio trước khi chuyển câu
-        stopAndReleaseMediaPlayer();
-
         if (currentIndex > 0) {
             currentIndex--;
             displayQuestion();
@@ -407,10 +382,7 @@ public class TakeExamActivity extends AppCompatActivity {
     }
 
     private void goNext() {
-        // Hủy auto next khi người dùng tự chuyển
         cancelAutoNext();
-        // Dừng audio trước khi chuyển câu
-        stopAndReleaseMediaPlayer();
         if (currentIndex < questions.size() - 1) {
             currentIndex++;
             displayQuestion();
@@ -456,7 +428,7 @@ public class TakeExamActivity extends AppCompatActivity {
                 .setTitle("Nộp bài")
                 .setMessage("Bạn đã trả lời " + answered + "/" + total + " câu. Bạn có chắc muốn nộp bài?")
                 .setPositiveButton("Nộp bài", (dialog, which) -> submitExam())
-                .setNegativeButton("Tiếp tục làm bài", null) // ✅ Đổi thành "Tiếp tục làm bài" để rõ nghĩa
+                .setNegativeButton("Hủy", null)
                 .show();
     }
 
@@ -466,7 +438,14 @@ public class TakeExamActivity extends AppCompatActivity {
         }
 
         cancelAutoNext();
-        stopAndReleaseMediaPlayer();
+
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
 
         int timeSpent = (int) ((duration * 60 * 1000L - timeLeft) / 1000);
 
@@ -512,7 +491,13 @@ public class TakeExamActivity extends AppCompatActivity {
         if (autoNextHandler != null) {
             autoNextHandler.removeCallbacksAndMessages(null);
         }
-        stopAndReleaseMediaPlayer();
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
         if (audioHandler != null) {
             audioHandler.removeCallbacksAndMessages(null);
         }
@@ -521,14 +506,16 @@ public class TakeExamActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        // ✅ VẪN CHO PHÉP THOÁT (hiển thị dialog xác nhận)
         new AlertDialog.Builder(this)
                 .setTitle("Thoát bài thi")
                 .setMessage("Bạn có chắc muốn thoát? Tiến trình sẽ không được lưu.")
                 .setPositiveButton("Thoát", (dialog, which) -> {
                     if (timer != null) timer.cancel();
                     cancelAutoNext();
-                    stopAndReleaseMediaPlayer();
+                    if (mediaPlayer != null) {
+                        mediaPlayer.stop();
+                        mediaPlayer.release();
+                    }
                     finish();
                 })
                 .setNegativeButton("Tiếp tục", null)

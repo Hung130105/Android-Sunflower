@@ -1,26 +1,32 @@
 package com.example.sunflower.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.sunflower.R;
 import com.example.sunflower.api.ApiService;
 import com.example.sunflower.api.RetrofitClient;
 import com.example.sunflower.api.request.RegisterRequest;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import android.content.Intent;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    private ImageView btnBack;
     private EditText etUsername, etPassword, etFullname, etEmail;
     private Button btnRegister;
+    private TextView tvBackToLogin;
     private ProgressBar progressBar;
 
     @Override
@@ -33,15 +39,31 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        btnBack = findViewById(R.id.btnBack);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         etFullname = findViewById(R.id.etFullname);
         etEmail = findViewById(R.id.etEmail);
         btnRegister = findViewById(R.id.btnRegister);
+        tvBackToLogin = findViewById(R.id.tvBackToLogin);
         progressBar = findViewById(R.id.progressBar);
     }
 
     private void setupListeners() {
+        // Nút quay lại
+        btnBack.setOnClickListener(v -> {
+            finish(); // Quay lại màn hình trước
+        });
+
+        // Link quay lại đăng nhập
+        tvBackToLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            finish();
+        });
+
+        // Nút đăng ký
         btnRegister.setOnClickListener(v -> register());
     }
 
@@ -66,6 +88,8 @@ public class RegisterActivity extends AppCompatActivity {
 
         progressBar.setVisibility(View.VISIBLE);
         btnRegister.setEnabled(false);
+        btnBack.setEnabled(false);
+        tvBackToLogin.setEnabled(false);
 
         ApiService apiService = RetrofitClient.getApiService();
         Call<ApiService.RegisterResponse> call = apiService.register(
@@ -76,12 +100,23 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<ApiService.RegisterResponse> call, Response<ApiService.RegisterResponse> response) {
                 progressBar.setVisibility(View.GONE);
                 btnRegister.setEnabled(true);
+                btnBack.setEnabled(true);
+                tvBackToLogin.setEnabled(true);
 
                 if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_LONG).show();
+
+                    // Chuyển về màn hình đăng nhập
+                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Đăng ký thất bại", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Đăng ký thất bại";
+                    if (response.code() == 400) {
+                        errorMsg = "Tên đăng nhập đã tồn tại";
+                    }
+                    Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -89,7 +124,9 @@ public class RegisterActivity extends AppCompatActivity {
             public void onFailure(Call<ApiService.RegisterResponse> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnRegister.setEnabled(true);
-                Toast.makeText(RegisterActivity.this, "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                btnBack.setEnabled(true);
+                tvBackToLogin.setEnabled(true);
+                Toast.makeText(RegisterActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
